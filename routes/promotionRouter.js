@@ -1,5 +1,6 @@
 const express = require('express');
 const promotionRouter = express.Router();
+const authenticate = require('../authenticate');
 
 const Promotion = require('../models/promotion');
 
@@ -9,17 +10,17 @@ promotionRouter.route('/')
     .then(promotions => res.status(200).json(promotions)) //Another possible way
     .catch(err => next(err))
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser,(req, res, next) => {
     Promotion.create(req.body)
     .then(promotion => res.status(200).json(promotion))
     .catch(err => next(err))
     // console.log('Promotion Created ', promotion);
 })
-.put((req, res) => {
+.put(authenticate.verifyUser,(req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /promotions');
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser,(req, res, next) => {
     Promotion.deleteMany()
     .then(promotions => res.status(200).json(promotions))
     .catch(err => next(err))
@@ -33,11 +34,11 @@ promotionRouter.route('/:promotionId')
     .catch(err => next(err))
     // console.log('Promotions Deleted ', promotion);
 })
-.post((req, res) => { //Can delete...you will never support a post here and waste of resouce...notes for future.
+.post(authenticate.verifyUser,(req, res) => { //Can delete...you will never support a post here and waste of resouce...notes for future.
     res.statusCode = 403;
     res.end(`POST operation not supported on /promotions/:promotionId`);
 })
-.put((req,res, next) => {
+.put(authenticate.verifyUser,(req,res, next) => {
     Promotion.findByIdAndUpdate(req.params.promotionId, {
         $set: req.body //replaces entire body or certain fields{description: req.body.description,  name: req.body.name}
     }, {new: true}) //Returning payload..False stops the .then
@@ -45,7 +46,7 @@ promotionRouter.route('/:promotionId')
     .catch(err => next(err))
     // console.log('Promotions Deleted ', promotion);
 })
-.delete((req,res, next) => {
+.delete(authenticate.verifyUser,(req,res, next) => {
     Promotion.findByIdAndDelete(req.params.promotionId)
     .then(promotion => res.status(200).json(promotion))
     .catch(err => next(err))
